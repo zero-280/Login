@@ -14,4 +14,4 @@ Dies ist ein modernes HTML-Frontend für eine Login- und Registrierungsseite –
 
 1. Klone das Repository:
    ```bash
-   git clone https://github.com/<dein-nutzername>/modern-login-register.git
+   git clone https://github.com/zero-280/modern-login-register.git
