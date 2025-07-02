@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login & Registrierung</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: #f3f4f6;
+      font-family: Arial, sans-serif;
+    }
+    .card {
+      width: 500px;
+      background-color: #171717;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: transform .3s;
+      position: relative;
+    }
+    .card:hover { transform: scale(1.02); }
+
+    .tabs {
+      display: flex;
+      background-color: #202020;
+    }
+    .tab {
+      flex: 1;
+      padding: 1em;
+      text-align: center;
+      color: #aaa;
+      cursor: pointer;
+      transition: background .3s, color .3s;
+    }
+    .tab.active {
+      background-color: #171717;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .form-container {
+      padding: 2em;
+      position: relative;
+    }
+    form {
+      display: none;
+      flex-direction: column;
+      gap: 1em;
+    }
+    form.active {
+      display: flex;
+    }
+
+    label {
+      font-size: 0.9em;
+      color: #ddd;
+      margin-bottom: 0.3em;
+    }
+    .field {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      background-color: #202020;
+      border-radius: 8px;
+      padding: 0.8em;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+    }
+    .field svg { flex-shrink: 0; width: 1.2em; height: 1.2em; fill: #aaa; }
+    .field input {
+      flex: 1;
+      border: none;
+      background: none;
+      color: #eee;
+      font-size: 1em;
+      outline: none;
+    }
+
+    .submit-btn {
+      padding: 0.8em;
+      border: none;
+      border-radius: 8px;
+      background-color: #2e8b57;
+      color: #fff;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background .3s;
+    }
+    .submit-btn:hover {
+      background-color: #246b45;
+    }
+
+    /* Overlay for dimming */
+    .overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      pointer-events: all;
+    }
+
+    /* Loader */
+    .loader {
+      width: 50px;
+      height: 50px;
+      display: none;
+      border: 5px solid rgb(255, 17, 0);
+      border-radius: 50%;
+      border-top-color: transparent;
+      border-bottom-color: transparent;
+      animation: rot5 1s infinite;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+    }
+    @keyframes rot5 {
+      0% { transform: translate(-50%, -50%) rotate(0); }
+      50% {
+        transform: translate(-50%, -50%) rotate(180deg);
+        border-top-color: rgb(139, 46, 46);
+        border-bottom-color: rgb(243, 92, 33);
+        border-right-color: transparent;
+        border-left-color: transparent;
+      }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="tabs">
+      <div id="tab-login" class="tab active">Login</div>
+      <div id="tab-register" class="tab">Registrieren</div>
+    </div>
+    <div class="form-container">
+      <div id="overlay" class="overlay"></div>
+      <div id="loader" class="loader"></div>
+
+      <!-- Login-Formular -->
+      <form id="login-form" class="active" onsubmit="handleLogin(event)">
+        <div>
+          <label for="login-user">Benutzername</label>
+          <div class="field">
+            <svg viewBox="0 0 16 16"><path d="M13.106 7.222..."/></svg>
+            <input id="login-user" type="text" placeholder="Benutzername" required>
+          </div>
+        </div>
+        <div>
+          <label for="login-pass">Passwort</label>
+          <div class="field">
+            <svg viewBox="0 0 16 16"><path d="M8 1..."/></svg>
+            <input id="login-pass" type="password" placeholder="Passwort" required>
+          </div>
+        </div>
+        <button type="submit" class="submit-btn">Login</button>
+      </form>
+
+      <!-- Registrierungs-Formular -->
+      <form id="register-form" onsubmit="handleRegister(event)">
+        <div>
+          <label for="reg-user">Neuer Benutzername</label>
+          <div class="field">
+            <svg viewBox="0 0 16 16"><path d="M13.106 7.222..."/></svg>
+            <input id="reg-user" type="text" placeholder="Neuer Benutzername" required>
+          </div>
+        </div>
+        <div>
+          <label for="reg-pass">Neues Passwort</label>
+          <div class="field">
+            <svg viewBox="0 0 16 16"><path d="M8 1..."/></svg>
+            <input id="reg-pass" type="password" placeholder="Neues Passwort" required>
+          </div>
+        </div>
+        <button type="submit" class="submit-btn">Registrieren</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const loader = document.getElementById('loader');
+    const overlay = document.getElementById('overlay');
+
+    tabLogin.addEventListener('click', () => {
+      tabLogin.classList.add('active');
+      tabRegister.classList.remove('active');
+      loginForm.classList.add('active');
+      registerForm.classList.remove('active');
+    });
+    tabRegister.addEventListener('click', () => {
+      tabRegister.classList.add('active');
+      tabLogin.classList.remove('active');
+      registerForm.classList.add('active');
+      loginForm.classList.remove('active');
+    });
+
+    function handleLogin(e) {
+      e.preventDefault();
+      overlay.style.display = 'block';
+      loader.style.display = 'block';
+      setTimeout(() => {
+        loader.style.display = 'none';
+        overlay.style.display = 'none';
+        alert('Login erfolgreich!');
+      }, 2000);
+    }
+    function handleRegister(e) {
+      e.preventDefault();
+      overlay.style.display = 'block';
+      loader.style.display = 'block';
+      setTimeout(() => {
+        loader.style.display = 'none';
+        overlay.style.display = 'none';
+        alert('Registrierung erfolgreich!');
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
