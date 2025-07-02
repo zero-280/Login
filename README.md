@@ -1,17 +1,19 @@
-# Modern Login & Registrierung UI
+# Modern Login & Registration UI
 
-Dies ist ein modernes HTML-Frontend für eine Login- und Registrierungsseite – komplett in reinem HTML, CSS und JavaScript umgesetzt.
+This is a modern HTML frontend for a login and registration page – implemented entirely in pure HTML, CSS, and JavaScript.
 
 ## ✨ Features
 
-- Login- und Registrierformular mit Tab-Wechsel
-- Stilvolles Dark-Theme Design mit Hover-Effekten
-- Ladeanimation beim Absenden (Kreis-Spinner)
-- Überlagerung („Dimming Overlay“) während des Ladens
-- Responsives Layout (zentriert, feste Breite)
+- Login and registration form with tab switching
+- Stylish dark theme design with hover effects
+- Loading animation when submitting (circle spinner)
+- Dimming overlay during loading
+- Responsive layout (centered, fixed width)
 
-## 🚀 Nutzung
+## 🚀 Usage
 
-1. Klone das Repository:
-   ```bash
+1. Clone the repository:
+```bash
    git clone https://github.com/zero-280/Login.git
+
+Translated with DeepL.com (free version)
