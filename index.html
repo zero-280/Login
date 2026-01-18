@@ -1,230 +1,678 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login & Registrierung</title>
+
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background-color: #f3f4f6;
-      font-family: Arial, sans-serif;
-    }
-    .card {
-      width: 500px;
-      background-color: #171717;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      transition: transform .3s;
-      position: relative;
-    }
-    .card:hover { transform: scale(1.02); }
+    :root{
+      --bg-0:#070A12;
+      --bg-1:#0B1220;
+      --card:#0E1628CC;
+      --stroke:rgba(255,255,255,.08);
 
-    .tabs {
-      display: flex;
-      background-color: #202020;
-    }
-    .tab {
-      flex: 1;
-      padding: 1em;
-      text-align: center;
-      color: #aaa;
-      cursor: pointer;
-      transition: background .3s, color .3s;
-    }
-    .tab.active {
-      background-color: #171717;
-      color: #fff;
-      font-weight: bold;
+      --text:#EAF0FF;
+      --muted:#A6B0C6;
+
+      --accent:#3B82F6;
+      --accent-2:#22C55E;
+      --danger:#EF4444;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --shadow-soft: 0 10px 30px rgba(0,0,0,.35);
+
+      --radius: 18px;
+      --radius-sm: 14px;
+      --ease: cubic-bezier(.2,.8,.2,1);
     }
 
-    .form-container {
-      padding: 2em;
-      position: relative;
-    }
-    form {
-      display: none;
-      flex-direction: column;
-      gap: 1em;
-    }
-    form.active {
-      display: flex;
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    html, body{ height:100%; }
+    body{
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      display:grid;
+      place-items:center;
+      min-height:100vh;
+      background:
+        radial-gradient(1100px 700px at 20% 10%, rgba(59,130,246,.25), transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, rgba(34,197,94,.18), transparent 55%),
+        radial-gradient(900px 600px at 60% 90%, rgba(239,68,68,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      overflow:hidden;
+      padding: 28px 16px;
     }
 
-    label {
-      font-size: 0.9em;
-      color: #ddd;
-      margin-bottom: 0.3em;
+    .bg-grid{
+      position:fixed;
+      inset:-2px;
+      pointer-events:none;
+      opacity:.18;
+      background-image:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(closest-side at 50% 40%, rgba(0,0,0,1), rgba(0,0,0,.2) 55%, transparent 78%);
+      animation: drift 14s linear infinite;
     }
-    .field {
-      display: flex;
-      align-items: center;
-      gap: 0.5em;
-      background-color: #202020;
-      border-radius: 8px;
-      padding: 0.8em;
-      box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+    @keyframes drift{
+      from{ transform: translate3d(0,0,0); }
+      to{ transform: translate3d(-42px, -42px, 0); }
     }
-    .field svg { flex-shrink: 0; width: 1.2em; height: 1.2em; fill: #aaa; }
-    .field input {
-      flex: 1;
-      border: none;
-      background: none;
-      color: #eee;
-      font-size: 1em;
+
+    .wrap{ width:min(520px, 100%); position:relative; }
+
+    .card{
+      width:100%;
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      position:relative;
+      transform: translateZ(0);
+    }
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px -2px auto -2px;
+      height: 120px;
+      background: radial-gradient(600px 120px at 50% 0%, rgba(59,130,246,.28), transparent 60%);
+      pointer-events:none;
+    }
+
+    .header{
+      padding: 22px 22px 10px 22px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 16px;
+      position:relative;
+      z-index:1;
+    }
+
+    .brand{ display:flex; flex-direction:column; gap:6px; }
+    .brand h1{
+      font-size: 18px;
+      letter-spacing:.2px;
+      font-weight: 700;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .logo{
+      width: 26px; height: 26px;
+      border-radius: 10px;
+      background:
+        radial-gradient(12px 12px at 30% 30%, rgba(255,255,255,.45), transparent 55%),
+        linear-gradient(135deg, rgba(59,130,246,.95), rgba(34,197,94,.75));
+      box-shadow: 0 10px 26px rgba(59,130,246,.28);
+      border: 1px solid rgba(255,255,255,.18);
+      flex: 0 0 auto;
+    }
+    .brand p{
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+      max-width: 44ch;
+    }
+
+    .tabs{
+      margin: 0 22px 16px 22px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--stroke);
+      border-radius: 999px;
+      padding: 6px;
+      display:flex;
+      gap:6px;
+      position:relative;
+      z-index:1;
+    }
+    .tab{
+      flex:1;
+      border:0;
+      background: transparent;
+      color: var(--muted);
+      padding: 10px 12px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-weight: 800;
+      letter-spacing: .2px;
+      transition: color .2s var(--ease), transform .2s var(--ease);
       outline: none;
     }
+    .tab:focus-visible{ box-shadow: 0 0 0 3px rgba(59,130,246,.35); }
+    .tab:hover{ color: var(--text); transform: translateY(-1px); }
+    .tab.active{ color: var(--text); }
 
-    .submit-btn {
-      padding: 0.8em;
-      border: none;
-      border-radius: 8px;
-      background-color: #2e8b57;
-      color: #fff;
-      font-size: 1em;
-      cursor: pointer;
-      transition: background .3s;
+    .tab-indicator{
+      position:absolute;
+      top:6px; bottom:6px;
+      width: calc(50% - 6px);
+      left: 6px;
+      background:
+        radial-gradient(140px 80px at 30% 30%, rgba(255,255,255,.18), transparent 55%),
+        linear-gradient(135deg, rgba(59,130,246,.40), rgba(34,197,94,.22));
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 999px;
+      box-shadow: var(--shadow-soft);
+      transition: transform .35s var(--ease);
+      pointer-events:none;
     }
-    .submit-btn:hover {
-      background-color: #246b45;
+    .tabs[data-active="register"] .tab-indicator{ transform: translateX(100%); }
+
+    .content{ padding: 0 22px 22px 22px; position:relative; z-index:1; }
+
+    /* --- IMPORTANT CHANGE:
+       forms are now stacked (grid) with fade/slide.
+       No more 200% slider => no clipping / cut-off on register. */
+    .forms{
+      position:relative;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--stroke);
+      background: rgba(0,0,0,.18);
+      overflow: hidden;
+      display:grid;
     }
 
-    /* Overlay for dimming */
-    .overlay {
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
+    .panel{
+      grid-area: 1 / 1;
       width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      pointer-events: all;
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      gap: 14px;
+
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity .28s var(--ease), transform .28s var(--ease);
+    }
+    .panel.active{
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
     }
 
-    /* Loader */
-    .loader {
-      width: 50px;
-      height: 50px;
-      display: none;
-      border: 5px solid rgb(255, 17, 0);
-      border-radius: 50%;
-      border-top-color: transparent;
-      border-bottom-color: transparent;
-      animation: rot5 1s infinite;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+    .row{ display:flex; flex-direction:column; gap: 7px; }
+    label{
+      color: rgba(234,240,255,.88);
+      font-size: 12.5px;
+      letter-spacing: .25px;
+    }
+
+    .field{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      transition: border .2s var(--ease), transform .2s var(--ease), box-shadow .2s var(--ease);
+    }
+    .field:focus-within{
+      border-color: rgba(59,130,246,.55);
+      box-shadow: 0 0 0 3px rgba(59,130,246,.18);
+      transform: translateY(-1px);
+    }
+
+    .icon{
+      width: 18px; height: 18px;
+      opacity: .9;
+      flex: 0 0 auto;
+      color: rgba(234,240,255,.88);
+    }
+    .field input{
+      flex:1;
+      border:0;
+      outline:none;
+      background: transparent;
+      color: var(--text);
+      font-size: 14.5px;
+      letter-spacing:.2px;
+      padding: 2px 0;
+      min-width: 0;
+    }
+    .field input::placeholder{ color: rgba(166,176,198,.75); }
+
+    .toggle-pass{
+      border:0;
+      background: transparent;
+      color: rgba(234,240,255,.78);
+      cursor:pointer;
+      padding: 6px 8px;
+      border-radius: 10px;
+      transition: background .2s var(--ease), color .2s var(--ease);
+      flex: 0 0 auto;
+    }
+    .toggle-pass:hover{
+      background: rgba(255,255,255,.06);
+      color: rgba(234,240,255,1);
+    }
+    .toggle-pass:focus-visible{
+      outline:none;
+      box-shadow: 0 0 0 3px rgba(59,130,246,.35);
+    }
+
+    .meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .hint{
+      color: rgba(166,176,198,.92);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .link{
+      color: rgba(59,130,246,.95);
+      text-decoration:none;
+      font-weight: 800;
+      font-size: 12.5px;
+      transition: opacity .2s var(--ease);
+      white-space:nowrap;
+    }
+    .link:hover{ opacity:.85; }
+    .link:focus-visible{
+      outline:none;
+      box-shadow: 0 0 0 3px rgba(59,130,246,.35);
+      border-radius: 10px;
+      padding: 2px 6px;
+      margin: -2px -6px;
+    }
+
+    .submit{
+      margin-top: 4px;
+      border:0;
+      cursor:pointer;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 900;
+      letter-spacing: .3px;
+      color: white;
+      background:
+        radial-gradient(140px 80px at 20% 20%, rgba(255,255,255,.22), transparent 55%),
+        linear-gradient(135deg, rgba(59,130,246,1), rgba(34,197,94,.85));
+      box-shadow: 0 14px 28px rgba(59,130,246,.25);
+      transition: transform .2s var(--ease), filter .2s var(--ease), box-shadow .2s var(--ease);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      min-height: 44px;
+    }
+    .submit:hover{
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+      box-shadow: 0 18px 32px rgba(59,130,246,.28);
+    }
+    .submit:active{ transform: translateY(0); filter: brightness(.98); }
+    .submit:focus-visible{
+      outline:none;
+      box-shadow: 0 0 0 3px rgba(59,130,246,.35), 0 18px 32px rgba(59,130,246,.28);
+    }
+    .submit[disabled]{ cursor:not-allowed; opacity:.75; transform:none; filter:none; }
+
+    .spinner{
+      width: 18px; height: 18px;
+      border-radius: 999px;
+      border: 2px solid rgba(255,255,255,.35);
+      border-top-color: rgba(255,255,255,1);
+      animation: spin .8s linear infinite;
+      display:none;
+    }
+    @keyframes spin{ to{ transform: rotate(360deg); } }
+
+    .fineprint{
+      margin-top: 14px;
+      color: rgba(166,176,198,.85);
+      font-size: 11.5px;
+      line-height: 1.4;
+      text-align:center;
+    }
+
+    .overlay{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display:none;
+      pointer-events: all;
       z-index: 10;
     }
-    @keyframes rot5 {
-      0% { transform: translate(-50%, -50%) rotate(0); }
-      50% {
-        transform: translate(-50%, -50%) rotate(180deg);
-        border-top-color: rgb(139, 46, 46);
-        border-bottom-color: rgb(243, 92, 33);
-        border-right-color: transparent;
-        border-left-color: transparent;
-      }
-      100% { transform: translate(-50%, -50%) rotate(360deg); }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 26px;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(14,22,40,.92);
+      border: 1px solid rgba(255,255,255,.10);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow-soft);
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      width: min(520px, calc(100% - 24px));
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .25s var(--ease), transform .25s var(--ease);
+      z-index: 999;
+    }
+    .toast.show{
+      opacity:1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast .dot{
+      width: 10px; height: 10px;
+      border-radius: 999px;
+      margin-top: 4px;
+      background: var(--accent-2);
+      box-shadow: 0 0 0 4px rgba(34,197,94,.15);
+      flex: 0 0 auto;
+    }
+    .toast.error .dot{
+      background: var(--danger);
+      box-shadow: 0 0 0 4px rgba(239,68,68,.15);
+    }
+    .toast .title{
+      font-weight: 900;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+    .toast .msg{
+      color: rgba(234,240,255,.86);
+      font-size: 12.5px;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 520px){
+      .header{ padding: 20px 18px 10px 18px; }
+      .tabs{ margin: 0 18px 14px 18px; }
+      .content{ padding: 0 18px 18px 18px; }
+      .panel{ padding: 16px; }
     }
   </style>
 </head>
+
 <body>
-  <div class="card">
-    <div class="tabs">
-      <div id="tab-login" class="tab active">Login</div>
-      <div id="tab-register" class="tab">Registrieren</div>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <div class="card" role="region" aria-label="Login und Registrierung">
+      <div class="header">
+        <div class="brand">
+          <h1><span class="logo" aria-hidden="true"></span> Konto-Zugang</h1>
+          <p>Melde dich an oder erstelle in wenigen Sekunden ein Konto. Modernes UI, klare Felder, saubere Interaktion.</p>
+        </div>
+      </div>
+
+      <div class="tabs" id="tabs" data-active="login" role="tablist" aria-label="Login Tabs">
+        <div class="tab-indicator" aria-hidden="true"></div>
+        <button id="tab-login" class="tab active" type="button" role="tab" aria-selected="true" aria-controls="panel-login">
+          Login
+        </button>
+        <button id="tab-register" class="tab" type="button" role="tab" aria-selected="false" aria-controls="panel-register">
+          Registrieren
+        </button>
+      </div>
+
+      <div class="content">
+        <div class="forms" id="forms">
+          <div id="overlay" class="overlay" aria-hidden="true"></div>
+
+          <!-- Login Panel -->
+          <form id="panel-login" class="panel active" autocomplete="off" onsubmit="handleLogin(event)">
+            <div class="row">
+              <label for="login-user">Benutzername</label>
+              <div class="field">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+                  <path d="M20 21a8 8 0 10-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M12 13a5 5 0 100-10 5 5 0 000 10z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <input id="login-user" type="text" placeholder="Benutzername" required />
+              </div>
+            </div>
+
+            <div class="row">
+              <label for="login-pass">Passwort</label>
+              <div class="field">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+                  <path d="M7 11V8a5 5 0 0110 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M6 11h12a2 2 0 012 2v7a2 2 0 01-2 2H6a2 2 0 01-2-2v-7a2 2 0 012-2z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 16v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+
+                <input id="login-pass" type="password" placeholder="Passwort" required />
+                <button class="toggle-pass" type="button" aria-label="Passwort anzeigen" data-target="login-pass">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+                    <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="meta">
+              <span class="hint">Tipp: Verwende eine starke Passphrase.</span>
+              <a class="link" href="#" onclick="event.preventDefault(); showToast('Info', 'Passwort-Reset ist hier nur Demo.');">Passwort vergessen?</a>
+            </div>
+
+            <button class="submit" id="login-submit" type="submit">
+              <span id="login-btn-text">Einloggen</span>
+              <span class="spinner" id="login-spinner" aria-hidden="true"></span>
+            </button>
+
+            <div class="fineprint">Mit dem Login akzeptierst du die Nutzungsbedingungen (Demo).</div>
+          </form>
+
+          <!-- Register Panel -->
+          <form id="panel-register" class="panel" autocomplete="off" onsubmit="handleRegister(event)">
+            <div class="row">
+              <label for="reg-user">Benutzername</label>
+              <div class="field">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+                  <path d="M20 21a8 8 0 10-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M12 13a5 5 0 100-10 5 5 0 000 10z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <input id="reg-user" type="text" placeholder="Benutzername" required />
+              </div>
+            </div>
+
+            <div class="row">
+              <label for="reg-pass">Passwort</label>
+              <div class="field">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+                  <path d="M7 11V8a5 5 0 0110 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M6 11h12a2 2 0 012 2v7a2 2 0 01-2 2H6a2 2 0 01-2-2v-7a2 2 0 012-2z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 16v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+
+                <input id="reg-pass" type="password" placeholder="Mindestens 8 Zeichen" required />
+                <button class="toggle-pass" type="button" aria-label="Passwort anzeigen" data-target="reg-pass">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+                    <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="row">
+              <label for="reg-pass2">Passwort bestätigen</label>
+              <div class="field">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+                  <path d="M7 11V8a5 5 0 0110 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M6 11h12a2 2 0 012 2v7a2 2 0 01-2 2H6a2 2 0 01-2-2v-7a2 2 0 012-2z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 16v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+
+                <input id="reg-pass2" type="password" placeholder="Passwort wiederholen" required />
+                <button class="toggle-pass" type="button" aria-label="Passwort anzeigen" data-target="reg-pass2">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+                    <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="meta">
+              <span class="hint">Keine echten Daten speichern (Demo).</span>
+              <a class="link" href="#" onclick="event.preventDefault(); switchTo('login');">Schon ein Konto?</a>
+            </div>
+
+            <button class="submit" id="reg-submit" type="submit">
+              <span id="reg-btn-text">Konto erstellen</span>
+              <span class="spinner" id="reg-spinner" aria-hidden="true"></span>
+            </button>
+
+            <div class="fineprint">Registrierung ist rein visuell – ohne Backend.</div>
+          </form>
+        </div>
+      </div>
     </div>
-    <div class="form-container">
-      <div id="overlay" class="overlay"></div>
-      <div id="loader" class="loader"></div>
+  </div>
 
-      <!-- Login-Formular -->
-      <form id="login-form" class="active" onsubmit="handleLogin(event)">
-        <div>
-          <label for="login-user">Benutzername</label>
-          <div class="field">
-            <svg viewBox="0 0 16 16"><path d="M13.106 7.222..."/></svg>
-            <input id="login-user" type="text" placeholder="Benutzername" required>
-          </div>
-        </div>
-        <div>
-          <label for="login-pass">Passwort</label>
-          <div class="field">
-            <svg viewBox="0 0 16 16"><path d="M8 1..."/></svg>
-            <input id="login-pass" type="password" placeholder="Passwort" required>
-          </div>
-        </div>
-        <button type="submit" class="submit-btn">Login</button>
-      </form>
-
-      <!-- Registrierungs-Formular -->
-      <form id="register-form" onsubmit="handleRegister(event)">
-        <div>
-          <label for="reg-user">Neuer Benutzername</label>
-          <div class="field">
-            <svg viewBox="0 0 16 16"><path d="M13.106 7.222..."/></svg>
-            <input id="reg-user" type="text" placeholder="Neuer Benutzername" required>
-          </div>
-        </div>
-        <div>
-          <label for="reg-pass">Neues Passwort</label>
-          <div class="field">
-            <svg viewBox="0 0 16 16"><path d="M8 1..."/></svg>
-            <input id="reg-pass" type="password" placeholder="Neues Passwort" required>
-          </div>
-        </div>
-        <button type="submit" class="submit-btn">Registrieren</button>
-      </form>
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="dot" aria-hidden="true"></div>
+    <div>
+      <div class="title" id="toast-title">Erfolg</div>
+      <div class="msg" id="toast-msg">Aktion erfolgreich.</div>
     </div>
   </div>
 
   <script>
+    const tabsEl = document.getElementById('tabs');
     const tabLogin = document.getElementById('tab-login');
     const tabRegister = document.getElementById('tab-register');
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    const loader = document.getElementById('loader');
+
+    const panelLogin = document.getElementById('panel-login');
+    const panelRegister = document.getElementById('panel-register');
+
     const overlay = document.getElementById('overlay');
 
-    tabLogin.addEventListener('click', () => {
-      tabLogin.classList.add('active');
-      tabRegister.classList.remove('active');
-      loginForm.classList.add('active');
-      registerForm.classList.remove('active');
-    });
-    tabRegister.addEventListener('click', () => {
-      tabRegister.classList.add('active');
-      tabLogin.classList.remove('active');
-      registerForm.classList.add('active');
-      loginForm.classList.remove('active');
+    const toast = document.getElementById('toast');
+    const toastTitle = document.getElementById('toast-title');
+    const toastMsg = document.getElementById('toast-msg');
+
+    let toastTimer = null;
+
+    function switchTo(mode){
+      const isRegister = mode === 'register';
+
+      tabsEl.dataset.active = isRegister ? 'register' : 'login';
+
+      tabLogin.classList.toggle('active', !isRegister);
+      tabRegister.classList.toggle('active', isRegister);
+
+      tabLogin.setAttribute('aria-selected', String(!isRegister));
+      tabRegister.setAttribute('aria-selected', String(isRegister));
+
+      panelLogin.classList.toggle('active', !isRegister);
+      panelRegister.classList.toggle('active', isRegister);
+
+      // focus
+      const firstId = isRegister ? 'reg-user' : 'login-user';
+      const el = document.getElementById(firstId);
+      if(el) setTimeout(() => el.focus(), 120);
+    }
+
+    tabLogin.addEventListener('click', () => switchTo('login'));
+    tabRegister.addEventListener('click', () => switchTo('register'));
+
+    // Password toggle
+    document.querySelectorAll('.toggle-pass').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-target');
+        const input = document.getElementById(id);
+        if(!input) return;
+        const isPw = input.type === 'password';
+        input.type = isPw ? 'text' : 'password';
+        btn.setAttribute('aria-label', isPw ? 'Passwort verbergen' : 'Passwort anzeigen');
+      });
     });
 
-    function handleLogin(e) {
-      e.preventDefault();
-      overlay.style.display = 'block';
-      loader.style.display = 'block';
-      setTimeout(() => {
-        loader.style.display = 'none';
-        overlay.style.display = 'none';
-        alert('Login erfolgreich!');
-      }, 2000);
+    function setBusy(isBusy){
+      overlay.style.display = isBusy ? 'block' : 'none';
+      document.querySelectorAll('button, input').forEach(el => {
+        el.disabled = isBusy;
+      });
     }
-    function handleRegister(e) {
+
+    function setButtonLoading(kind, isLoading){
+      const btn = document.getElementById(kind === 'login' ? 'login-submit' : 'reg-submit');
+      const spinner = document.getElementById(kind === 'login' ? 'login-spinner' : 'reg-spinner');
+      const text = document.getElementById(kind === 'login' ? 'login-btn-text' : 'reg-btn-text');
+
+      btn.disabled = isLoading;
+      spinner.style.display = isLoading ? 'inline-block' : 'none';
+      text.textContent = isLoading
+        ? (kind === 'login' ? 'Prüfe…' : 'Erstelle…')
+        : (kind === 'login' ? 'Einloggen' : 'Konto erstellen');
+    }
+
+    function showToast(title, message, type='success'){
+      clearTimeout(toastTimer);
+      toastTitle.textContent = title;
+      toastMsg.textContent = message;
+      toast.classList.toggle('error', type === 'error');
+      toast.classList.add('show');
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+
+    function validateBasic(username, password){
+      if(username.trim().length < 3) return 'Benutzername muss mindestens 3 Zeichen haben.';
+      if(password.length < 8) return 'Passwort muss mindestens 8 Zeichen haben.';
+      return null;
+    }
+
+    function handleLogin(e){
       e.preventDefault();
-      overlay.style.display = 'block';
-      loader.style.display = 'block';
+      const user = document.getElementById('login-user').value;
+      const pass = document.getElementById('login-pass').value;
+
+      const err = validateBasic(user, pass);
+      if(err){ showToast('Fehler', err, 'error'); return; }
+
+      setBusy(true);
+      setButtonLoading('login', true);
+
       setTimeout(() => {
-        loader.style.display = 'none';
-        overlay.style.display = 'none';
-        alert('Registrierung erfolgreich!');
-      }, 2000);
+        setButtonLoading('login', false);
+        setBusy(false);
+        showToast('Login erfolgreich', 'Du wurdest eingeloggt (Demo).');
+      }, 1200);
+    }
+
+    function handleRegister(e){
+      e.preventDefault();
+      const user = document.getElementById('reg-user').value;
+      const pass = document.getElementById('reg-pass').value;
+      const pass2 = document.getElementById('reg-pass2').value;
+
+      const err = validateBasic(user, pass);
+      if(err){ showToast('Fehler', err, 'error'); return; }
+      if(pass !== pass2){ showToast('Fehler', 'Passwörter stimmen nicht überein.', 'error'); return; }
+
+      setBusy(true);
+      setButtonLoading('register', true);
+
+      setTimeout(() => {
+        setButtonLoading('register', false);
+        setBusy(false);
+        showToast('Registrierung erfolgreich', 'Konto erstellt (Demo). Bitte jetzt einloggen.');
+        switchTo('login');
+      }, 1400);
     }
   </script>
 </body>
